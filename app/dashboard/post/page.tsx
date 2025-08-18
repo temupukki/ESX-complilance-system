@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface Announcement {
   id: string;
@@ -55,8 +56,16 @@ export default function AnnouncementsPage() {
       setTitle("");
       setMessage("");
       fetchAnnouncements(); // refresh list
+
+      // SUCCESS TOAST
+      toast.success("Announcement posted successfully!", {
+        description: `${title.trim()} has been announced.`,
+      });
     } catch (err: any) {
       setError(err.message);
+      toast.error("Failed to post announcement", {
+        description: err.message,
+      });
     } finally {
       setLoading(false);
     }
@@ -71,7 +80,7 @@ export default function AnnouncementsPage() {
       {/* Post Form */}
       <form
         onSubmit={handleSubmit}
-        className="bg-white shadow-md rounded-lg p-4 mb-6"
+        className="bg-white shadow-md rounded-lg p-6 mb-6"
       >
         <h2 className="text-xl font-semibold mb-4">Post New Announcement</h2>
 
@@ -102,8 +111,21 @@ export default function AnnouncementsPage() {
         </button>
       </form>
 
-  
-
+      {/* List of Announcements */}
+      <div className="space-y-4">
+        {announcements.map((a) => (
+          <div
+            key={a.id}
+            className="bg-white rounded-lg shadow p-4 border border-gray-200"
+          >
+            <h3 className="font-semibold text-blue-700">{a.title}</h3>
+            <p className="text-gray-700">{a.message}</p>
+            <p className="text-gray-400 text-sm mt-1">
+              {new Date(a.createdAt).toLocaleString()}
+            </p>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

@@ -15,7 +15,7 @@ export default function UploadPage() {
       return;
     }
     if (!companyName.trim()) {
-      setMessage("❌ Please enter a company name");
+      setMessage("❌ Please enter bank code");
       return;
     }
 
@@ -47,7 +47,8 @@ export default function UploadPage() {
           title: file.name,
           fileUrl: publicUrlData.publicUrl,
           userId: "test-user-1", // replace with real logged-in user later
-          companyName: companyName.trim(),
+          companyName: `${companyName.trim().toLowerCase()}@esx.com`,
+
         }),
       });
 
@@ -72,7 +73,7 @@ export default function UploadPage() {
 
       <input
         type="text"
-        placeholder="Enter Company Name"
+        placeholder="Enter Bank code"
         value={companyName}
         onChange={(e) => setCompanyName(e.target.value)}
         className="mb-4 w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"

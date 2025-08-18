@@ -8,8 +8,6 @@ const NAV_LINKS = [
   { href: "/dashboard", label: "Home" },
   { href: "/dashboard/document", label: "View Document" },
   { href: "/dashboard/upload", label: "Upload Document" },
-  { href: "/dashboard/company", label: "Companies Management" },
-   { href: "/dashboard/post", label: "Announce Message" },
   { href: "/dashboard/announcements", label: "Announced Messages" },
 ];
 
@@ -21,6 +19,7 @@ export default async function Navbar() {
   }
 
   const userName = session.user.name || "User";
+  const userRole = session.user.role; // now available thanks to extendSession
 
   return (
     <nav className="w-full bg-blue-700 sticky top-0 z-50 p-4">
@@ -45,6 +44,25 @@ export default async function Navbar() {
               {link.label}
             </Link>
           ))}
+
+          {/* Admin-only Links */}
+          {userRole === "ADMIN" && (
+            <>
+              <Link
+                href="/dashboard/company"
+                className="text-white hover:bg-blue-600 px-4 py-2 rounded transition"
+              >
+                Companies Management
+              </Link>
+
+              <Link
+                href="/dashboard/post"
+                className="text-white hover:bg-blue-600 px-4 py-2 rounded transition"
+              >
+                Announce Message
+              </Link>
+            </>
+          )}
 
           {/* Display User Name */}
           <span className="text-white font-semibold px-4 py-2">
