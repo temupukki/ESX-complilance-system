@@ -16,15 +16,18 @@ import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { bankSigninSchema } from "@/lib/auth-schema"; // <-- use bank login schema
+import { bankSigninSchema } from "@/lib/auth-schema";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 type SigninFormData = z.infer<typeof bankSigninSchema>;
 
 export default function BankSignin() {
   const [showPassword, setShowPassword] = useState(false);
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
+  const router = useRouter();
 
   const {
     register,
@@ -38,13 +41,29 @@ export default function BankSignin() {
     },
   });
 
+  useEffect(() => {
+    async function checkSession() {
+      try {
+        const { data: session } = await authClient.getSession()
+        if (session) {
+          router.push("/dashboard");
+        }
+      } catch (error) {
+        console.error("Session check error:", error);
+      } finally {
+        setIsCheckingSession(false);
+      }
+    }
+    checkSession();
+  }, [router]);
+
   async function onSubmit(values: SigninFormData) {
     const { bankCode, password } = values;
 
     try {
       await authClient.signIn.email(
         {
-          email: `${bankCode}@esx.com`, // bankCode as login
+          email: `${bankCode}@esx.com`,
           password,
           callbackURL: "/dashboard",
         },
@@ -55,10 +74,10 @@ export default function BankSignin() {
             });
           },
           onSuccess: () => {
-            toast.success("Welcome !", {
+            toast.success("Welcome!", {
               description: "You've been signed in successfully",
             });
-            window.location.href = "/dashboard";
+            router.push("/dashboard");
           },
           onError: (ctx) => {
             toast.error("Sign in failed", {
@@ -74,6 +93,14 @@ export default function BankSignin() {
       });
       console.error("Sign-in error →", err);
     }
+  }
+
+  if (isCheckingSession) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      </div>
+    );
   }
 
   return (
@@ -157,7 +184,14 @@ export default function BankSignin() {
           </form>
         </CardContent>
 
-
+        <CardFooter className="flex justify-center mt-4">
+          <p className="text-sm text-gray-600">
+            Don't have an account?{" "}
+            <Link href="/bank/register" className="text-blue-600 hover:underline">
+              Register here
+            </Link>
+          </p>
+        </CardFooter>
       </Card>
     </div>
   );
