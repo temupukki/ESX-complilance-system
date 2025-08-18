@@ -6,6 +6,7 @@ import { toast } from "sonner";
 interface Announcement {
   id: string;
   title: string;
+  to: string;
   message: string;
   createdAt: string;
 }
@@ -13,6 +14,7 @@ interface Announcement {
 export default function AnnouncementsPage() {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [title, setTitle] = useState("");
+  const [to, setTo] = useState(""); // New field
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -36,8 +38,8 @@ export default function AnnouncementsPage() {
   // Handle form submit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !message.trim()) {
-      setError("Title and message are required");
+    if (!title.trim() || !to.trim() || !message.trim()) {
+      setError("Title, To, and Message are required");
       return;
     }
 
@@ -48,18 +50,19 @@ export default function AnnouncementsPage() {
       const res = await fetch("/api/announcements", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: title.trim(), message: message.trim() }),
+        body: JSON.stringify({ title: title.trim(), to: `${to.trim()}@esx.com`, message: message.trim() }),
       });
 
       if (!res.ok) throw new Error("Failed to create announcement");
 
       setTitle("");
+      setTo("");
       setMessage("");
       fetchAnnouncements(); // refresh list
 
       // SUCCESS TOAST
       toast.success("Announcement posted successfully!", {
-        description: `${title.trim()} has been announced.`,
+        description: `${title.trim()} has been announced to ${to.trim()}.`,
       });
     } catch (err: any) {
       setError(err.message);
@@ -92,6 +95,14 @@ export default function AnnouncementsPage() {
           className="w-full mb-3 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
 
+        <input
+          type="text"
+          placeholder="To (recipient or group)"
+          value={to}
+          onChange={(e) => setTo(e.target.value)}
+          className="w-full mb-3 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+
         <textarea
           placeholder="Message"
           value={message}
@@ -119,6 +130,7 @@ export default function AnnouncementsPage() {
             className="bg-white rounded-lg shadow p-4 border border-gray-200"
           >
             <h3 className="font-semibold text-blue-700">{a.title}</h3>
+            <p className="text-gray-500 text-sm mb-1"><span className="font-semibold">To:</span> {a.to}</p>
             <p className="text-gray-700">{a.message}</p>
             <p className="text-gray-400 text-sm mt-1">
               {new Date(a.createdAt).toLocaleString()}

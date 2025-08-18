@@ -12,43 +12,61 @@ export default async function DocumentsPage() {
     throw new Error("User not authenticated");
   }
 
-  // Fetch documents directly from DB
+  // Fetch documents for this user
   const docs = await prisma.document.findMany({
-    where: { companyName: session.user.email},
+    where: { companyName: session.user.email },
     orderBy: { createdAt: "desc" },
   });
 
   return (
-    <div className="p-6 max-w-md mx-auto">
+    <div className="p-6 max-w-5xl mx-auto">
       <h1 className="font-bold text-2xl mb-6 text-center text-blue-700">
         My Documents
       </h1>
 
       {docs.length === 0 ? (
-        <p className="text-center text-gray-500">No documents available for your account.</p>
+        <p className="text-center text-gray-500">
+          No documents available for your account.
+        </p>
       ) : (
-        <ul className="space-y-4">
-          {docs.map((doc) => (
-            <li
-              key={doc.id}
-              className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-gray-100 p-3 rounded"
-            >
-              <div>
-                <p className="font-medium">{doc.title}</p>
-                {doc.companyName && (
-                  <p className="text-sm text-gray-600">Company: {doc.companyName}</p>
-                )}
-              </div>
-              <a
-                href={doc.fileUrl}
-                target="_blank"
-                className="mt-2 sm:mt-0 text-blue-600 underline"
-              >
-                Download
-              </a>
-            </li>
-          ))}
-        </ul>
+        <div className="overflow-x-auto shadow-md rounded-lg">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-blue-700">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                  Title
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                  Company
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                  Download
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {docs.map((doc) => (
+                <tr key={doc.id} className="hover:bg-gray-100 transition-colors">
+                  <td className="px-6 py-4 whitespace-normal text-gray-800 font-medium">
+                    {doc.title}
+                  </td>
+                  <td className="px-6 py-4 whitespace-normal text-gray-700">
+                    {doc.companyName}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <a
+                      href={doc.fileUrl}
+                      target="_blank"
+                      className="text-blue-600 underline hover:text-blue-800"
+                    >
+                      Download
+                    </a>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

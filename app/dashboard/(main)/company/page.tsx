@@ -3,9 +3,19 @@ import prisma from "@/lib/prisma";
 import Link from "next/link";
 
 export default async function CompaniesPage() {
-  // Fetch all users from the user table
+  // Fetch all users with all fields from the user table
   const users = await prisma.user.findMany({
-    orderBy: { name: "asc" },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      emailVerified: true,
+      image: true,
+      role: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+    orderBy: { createdAt: "desc" },
   });
 
   return (
@@ -29,21 +39,31 @@ export default async function CompaniesPage() {
               <tr>
                 <th className="px-6 py-3 text-left text-sm font-medium">#</th>
                 <th className="px-6 py-3 text-left text-sm font-medium">Name</th>
+                <th className="px-6 py-3 text-left text-sm font-medium">Address and License Number</th>
                 <th className="px-6 py-3 text-left text-sm font-medium">Email</th>
+               
                 <th className="px-6 py-3 text-left text-sm font-medium">Role</th>
-            
-             
+                <th className="px-6 py-3 text-left text-sm font-medium">Created At</th>
+                <th className="px-6 py-3 text-left text-sm font-medium">Updated At</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {users.map((user, idx) => (
                 <tr key={user.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 text-sm text-gray-700">{idx + 1}</td>
-                  <td className="px-6 py-4 text-sm font-medium text-gray-900">{user.name}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700">{user.name}</td>
+
+                   <td className="px-6 py-4 text-sm text-gray-700">{user.image}</td>
+              
                   <td className="px-6 py-4 text-sm text-gray-700">{user.email}</td>
+               
                   <td className="px-6 py-4 text-sm text-gray-700">{user.role}</td>
-                
-                
+                  <td className="px-6 py-4 text-sm text-gray-700">
+                    {user.createdAt.toLocaleDateString()}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-700">
+                    {user.updatedAt.toLocaleDateString()}
+                  </td>
                 </tr>
               ))}
             </tbody>

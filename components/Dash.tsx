@@ -8,7 +8,7 @@ const NAV_LINKS = [
   { href: "/dashboard", label: "Home" },
   { href: "/dashboard/document", label: "View Document" },
   { href: "/dashboard/upload", label: "Upload Document" },
-  { href: "/dashboard/announcements", label: "Announced Messages" },
+  { href: "/dashboard/announcements", label: "Announcements" },
 ];
 
 export default async function Navbar() {
@@ -19,27 +19,27 @@ export default async function Navbar() {
   }
 
   const userName = session.user.name || "User";
-  const userRole = session.user.role; // now available thanks to extendSession
+  const userRole = session.user.role;
 
   return (
-    <nav className="w-full bg-blue-700 sticky top-0 z-50 p-4">
-      <div className="flex justify-between items-center h-16 max-w-7xl mx-auto">
+    <nav className="w-full bg-blue-700 sticky top-0 z-50 shadow-md">
+      <div className="max-w-7xl mx-auto flex justify-between items-center p-4">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
           <img
             src="/esx-logo-white-small.webp"
             alt="ESX Logo"
-            className="w-60 h-26 rounded-full"
+            className="w-40 h-16 object-contain rounded-full"
           />
         </Link>
 
-        {/* Links */}
-        <div className="flex items-center gap-4">
+        {/* Navigation Links */}
+        <div className="flex items-center gap-3 md:gap-4">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="text-white hover:bg-blue-600 px-4 py-2 rounded transition"
+              className="text-white font-medium hover:bg-blue-600 px-3 py-2 rounded-lg transition-colors duration-200"
             >
               {link.label}
             </Link>
@@ -49,23 +49,17 @@ export default async function Navbar() {
           {userRole === "ADMIN" && (
             <>
               <Link
-                href="/dashboard/company"
-                className="text-white hover:bg-blue-600 px-4 py-2 rounded transition"
+                href="/dashboard/admin"
+                className="text-white font-medium hover:bg-blue-600 px-3 py-2 rounded-lg transition-colors duration-200"
               >
-                Companies Management
+                Admin
               </Link>
-
-              <Link
-                href="/dashboard/post"
-                className="text-white hover:bg-blue-600 px-4 py-2 rounded transition"
-              >
-                Announce Message
-              </Link>
+           
             </>
           )}
 
-          {/* Display User Name */}
-          <span className="text-white font-semibold px-4 py-2">
+          {/* User Info */}
+          <span className="text-white font-semibold px-3 py-2 bg-blue-800 rounded-lg">
             {userName}
           </span>
 
@@ -77,7 +71,7 @@ export default async function Navbar() {
               redirect("/");
             }}
           >
-            <Button className="bg-gray-800 hover:bg-black text-white px-4 py-2 rounded">
+            <Button className="bg-gray-800 hover:bg-black text-white px-4 py-2 rounded-lg">
               Sign Out
             </Button>
           </form>
