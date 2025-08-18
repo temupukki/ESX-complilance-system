@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
 export default function UploadPage() {
@@ -8,14 +8,27 @@ export default function UploadPage() {
   const [companyName, setCompanyName] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [role, setRole] = useState<"USER" | "ADMIN">("USER");
+  const [userEmail, setUserEmail] = useState(""); // Add state for user email
+
+  useEffect(() => {
+    async function fetchSession() {
+      try {
+        const res = await fetch("/api/session");
+        if (!res.ok) throw new Error("Failed to fetch session");
+        const session = await res.json();
+        setRole(session?.user?.role || "USER");
+        setUserEmail(session?.user?.email || ""); // Set user email from session
+      } catch (err) {
+        console.error("Session fetch error:", err);
+      }
+    }
+    fetchSession();
+  }, []);
 
   const handleUpload = async () => {
     if (!file) {
       setMessage("❌ Please select a file first");
-      return;
-    }
-    if (!companyName.trim()) {
-      setMessage("❌ Please enter bank code");
       return;
     }
 
@@ -23,12 +36,11 @@ export default function UploadPage() {
     setMessage("");
 
     try {
-      // Correct bucket name
       const bucketName = "document";
       const filePath = `${Date.now()}-${file.name}`;
 
-      // Upload file to Supabase storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      // Upload file to Supabase
+      const { error: uploadError } = await supabase.storage
         .from(bucketName)
         .upload(filePath, file);
 
@@ -39,16 +51,21 @@ export default function UploadPage() {
         .from(bucketName)
         .getPublicUrl(filePath);
 
-      // Save metadata in your DB
+      // Determine company name based on role
+      const finalCompanyName = role === "ADMIN" 
+        ? `${companyName.trim().toLowerCase()}@esx.com`
+        : "esx1@esx.com";
+
+      // Save metadata in DB
       const res = await fetch("/api/documents", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: file.name,
           fileUrl: publicUrlData.publicUrl,
-          userId: "test-user-1", // replace with real logged-in user later
-          companyName: `${companyName.trim().toLowerCase()}@esx.com`,
-
+          userId: userEmail || "unknown-user", // Use user email as userId
+          companyName: finalCompanyName,
+          from: userEmail, // Add from field with user's email
         }),
       });
 
@@ -71,13 +88,16 @@ export default function UploadPage() {
         Upload Document
       </h1>
 
-      <input
-        type="text"
-        placeholder="Enter Bank code"
-        value={companyName}
-        onChange={(e) => setCompanyName(e.target.value)}
-        className="mb-4 w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
+      {/* Only show company input for ADMIN users */}
+      {role === "ADMIN" && (
+        <input
+          type="text"
+          placeholder="Enter Bank code"
+          value={companyName}
+          onChange={(e) => setCompanyName(e.target.value)}
+          className="mb-4 w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      )}
 
       <input
         type="file"

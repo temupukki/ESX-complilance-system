@@ -84,6 +84,7 @@ model Document {
   fileUrl   String   // link from Supabase
   createdAt DateTime @default(now())
   userId    String
+  from String?             
   companyName String?
 }
 model Announcement {
