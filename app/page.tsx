@@ -6,18 +6,17 @@ import {
   CardTitle,
   CardDescription,
   CardContent,
-  CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import Link from "next/link";
 import { Loader2 } from "lucide-react";
+import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { bankSigninSchema } from "@/lib/auth-schema"; // <-- use bank login schema
-import { authClient } from "@/lib/auth-client";
+import { bankSigninSchema } from "@/lib/auth-schema"; // <-- your schema
+import { authClient } from "@/lib/auth-client"; // <-- your auth client
 import { toast } from "sonner";
 import { useState } from "react";
 
@@ -44,7 +43,7 @@ export default function BankSignin() {
     try {
       await authClient.signIn.email(
         {
-          email: `${bankCode}@esx.com`, // bankCode as login
+          email: `${bankCode}@esx.com`, // using bankCode as email
           password,
           callbackURL: "/dashboard",
         },
@@ -55,24 +54,39 @@ export default function BankSignin() {
             });
           },
           onSuccess: () => {
-            toast.success("Welcome !", {
+            toast.success("Welcome!", {
               description: "You've been signed in successfully",
             });
             window.location.href = "/dashboard";
           },
           onError: (ctx) => {
-            toast.error("Sign in failed", {
-              description:
-                ctx.error.message || "Please check your credentials and try again",
-            });
+            let description = "Please check your credentials and try again";
+
+            if (ctx.error?.message) {
+              description = ctx.error.message;
+            }
+
+            toast.error("Sign in failed", { description });
+
+            if (process.env.NODE_ENV !== "production") {
+              console.error("Auth error →", ctx.error);
+            }
           },
         }
       );
-    } catch (err) {
-      toast.error("An unexpected error occurred", {
-        description: "Please try again later",
+    } catch (err: any) {
+      const message =
+        err?.response?.data?.message ||
+        err?.message ||
+        "An unexpected error occurred";
+
+      toast.error("Unexpected error", {
+        description: message,
       });
-      console.error("Sign-in error →", err);
+
+      if (process.env.NODE_ENV !== "production") {
+        console.error("Unexpected sign-in error →", err);
+      }
     }
   }
 
@@ -90,7 +104,10 @@ export default function BankSignin() {
         </CardHeader>
 
         <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="space-y-4 sm:space-y-6"
+          >
             {/* Bank Code Input */}
             <div className="space-y-2">
               <Label
@@ -106,7 +123,9 @@ export default function BankSignin() {
                 className="placeholder-blue-300 text-blue-700 focus:ring-2 focus:ring-blue-400"
               />
               {errors.bankCode && (
-                <p className="text-xs sm:text-sm text-blue-600 mt-1">{errors.bankCode.message}</p>
+                <p className="text-xs sm:text-sm text-blue-600 mt-1">
+                  {errors.bankCode.message}
+                </p>
               )}
             </div>
 
@@ -135,7 +154,9 @@ export default function BankSignin() {
                 className="placeholder-blue-300 text-blue-700 focus:ring-2 focus:ring-blue-400"
               />
               {errors.password && (
-                <p className="text-xs sm:text-sm text-blue-600 mt-1">{errors.password.message}</p>
+                <p className="text-xs sm:text-sm text-blue-600 mt-1">
+                  {errors.password.message}
+                </p>
               )}
             </div>
 
@@ -155,9 +176,14 @@ export default function BankSignin() {
               )}
             </Button>
           </form>
+
+          {/* Debug note for deployment */}
+          {process.env.NODE_ENV !== "production" && (
+            <p className="mt-4 text-xs text-gray-500 text-center">
+              Debug mode: check console for full error details
+            </p>
+          )}
         </CardContent>
-
-
       </Card>
     </div>
   );
