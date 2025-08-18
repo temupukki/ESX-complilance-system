@@ -2,6 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 export default function UploadPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -9,7 +13,7 @@ export default function UploadPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [role, setRole] = useState<"USER" | "ADMIN">("USER");
-  const [userEmail, setUserEmail] = useState(""); // Add state for user email
+  const [userEmail, setUserEmail] = useState("");
 
   useEffect(() => {
     async function fetchSession() {
@@ -18,7 +22,7 @@ export default function UploadPage() {
         if (!res.ok) throw new Error("Failed to fetch session");
         const session = await res.json();
         setRole(session?.user?.role || "USER");
-        setUserEmail(session?.user?.email || ""); // Set user email from session
+        setUserEmail(session?.user?.email || "");
       } catch (err) {
         console.error("Session fetch error:", err);
       }
@@ -28,7 +32,7 @@ export default function UploadPage() {
 
   const handleUpload = async () => {
     if (!file) {
-      setMessage("❌ Please select a file first");
+      setMessage("Please select a file first");
       return;
     }
 
@@ -39,81 +43,104 @@ export default function UploadPage() {
       const bucketName = "document";
       const filePath = `${Date.now()}-${file.name}`;
 
-      // Upload file to Supabase
       const { error: uploadError } = await supabase.storage
         .from(bucketName)
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
       const { data: publicUrlData } = supabase.storage
         .from(bucketName)
         .getPublicUrl(filePath);
 
-      // Determine company name based on role
       const finalCompanyName = role === "ADMIN" 
         ? `${companyName.trim().toLowerCase()}@esx.com`
         : "esx1@esx.com";
 
-      // Save metadata in DB
       const res = await fetch("/api/documents", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: file.name,
           fileUrl: publicUrlData.publicUrl,
-          userId: userEmail || "unknown-user", // Use user email as userId
+          userId: userEmail || "unknown-user",
           companyName: finalCompanyName,
-          from: userEmail, // Add from field with user's email
+          from: userEmail,
         }),
       });
 
       if (!res.ok) throw new Error("Failed to save metadata");
 
-      setMessage("✅ File uploaded successfully!");
+      setMessage("File uploaded successfully!");
       setFile(null);
       setCompanyName("");
     } catch (err: any) {
       console.error(err);
-      setMessage(`❌ Upload failed: ${err.message}`);
+      setMessage(`Upload failed: ${err.message}`);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="p-6 max-w-md mx-auto">
-      <h1 className="text-2xl font-bold mb-4 text-center text-blue-700">
-        Upload Document
-      </h1>
+    <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold text-center text-blue-600">
+            Document Upload
+          </CardTitle>
+        </CardHeader>
+        
+        <CardContent className="space-y-4">
+          {role === "ADMIN" && (
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                Bank Code
+              </label>
+              <Input
+                placeholder="Enter bank code"
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+              />
+            </div>
+          )}
 
-      {/* Only show company input for ADMIN users */}
-      {role === "ADMIN" && (
-        <input
-          type="text"
-          placeholder="Enter Bank code"
-          value={companyName}
-          onChange={(e) => setCompanyName(e.target.value)}
-          className="mb-4 w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      )}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">
+              Document File
+            </label>
+            <Input
+              type="file"
+              onChange={(e) => setFile(e.target.files?.[0] || null)}
+            />
+          </div>
 
-      <input
-        type="file"
-        onChange={(e) => setFile(e.target.files?.[0] || null)}
-        className="mb-4 w-full"
-      />
+          <Button
+            onClick={handleUpload}
+            disabled={loading}
+            className="w-full"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Uploading...
+              </>
+            ) : (
+              "Upload Document"
+            )}
+          </Button>
 
-      <button
-        onClick={handleUpload}
-        disabled={loading}
-        className="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
-      >
-        {loading ? "Uploading..." : "Upload"}
-      </button>
-
-      {message && <p className="mt-4 text-center text-gray-700">{message}</p>}
+          {message && (
+            <p className={`text-center text-sm p-3 rounded-md ${
+              message.startsWith("Upload failed") 
+                ? "bg-red-100 text-red-600"
+                : "bg-green-100 text-green-600"
+            }`}>
+              {message}
+            </p>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

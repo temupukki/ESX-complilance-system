@@ -5,7 +5,7 @@ import { Button } from "./ui/button";
 import { headers } from "next/headers";
 
 const NAV_LINKS = [
-  { href: "/dashboard", label: "Home" },
+  { href: "/dashboard", label: "Dashboard" },
   { href: "/dashboard/document", label: "View Document" },
   { href: "/dashboard/upload", label: "Upload Document" },
   { href: "/dashboard/announcements", label: "Announcements" },
@@ -29,7 +29,7 @@ export default async function Navbar() {
           <img
             src="/esx-logo-white-small.webp"
             alt="ESX Logo"
-            className="w-40 h-16 object-contain rounded-full"
+            className="w-60 h-26 object-contain rounded-full"
           />
         </Link>
 
@@ -58,11 +58,10 @@ export default async function Navbar() {
             </>
           )}
 
-          {/* User Info */}
-          <span className="text-white font-semibold px-3 py-2 bg-blue-800 rounded-lg">
+          <Link href="/dashboard/profile">   <span className="text-white font-semibold px-3 py-2 bg-blue-800 rounded-lg">
             {userName}
-          </span>
-
+          </span></Link>
+          
           {/* Sign Out */}
           <form
             action={async () => {

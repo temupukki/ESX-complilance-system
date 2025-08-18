@@ -16,46 +16,46 @@ import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { bankRegisterSchema } from "@/lib/auth-schema"; // <-- use BANK schema
+import { bankRegisterSchema } from "@/lib/auth-schema";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 import { useState } from "react";
 
-type SignupFormData = z.infer<typeof bankRegisterSchema>;
+// Create a modified schema without password field
+const bankRegisterSchemaWithoutPassword = bankRegisterSchema.omit({ password: true });
+type SignupFormData = z.infer<typeof bankRegisterSchemaWithoutPassword>;
 
 export default function BankSignup() {
-  const [showPassword, setShowPassword] = useState(false);
-
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<SignupFormData>({
-    resolver: zodResolver(bankRegisterSchema),
+    resolver: zodResolver(bankRegisterSchemaWithoutPassword),
     defaultValues: {
       bankName: "",
       bankCode: "",
       licenseNumber: "",
       tin: "",
       headquartersAddress: "",
-
       adminName: "",
-    
       adminPhone: "",
-      password: "",
     },
   });
 
   async function onSubmit(values: SignupFormData) {
     try {
       toast.info("Registering bank...", { duration: 4000 });
+      
+      // Generate default password based on bank code
+      const defaultPassword = `${values.bankCode}@12341234`;
+      
       const { error } = await authClient.signUp.email(
         {
           email: `${values.bankCode}@esx.com`,
-          password: `${values.password}`,
-          name: `${values.bankName} - ${values.adminName}` ,
+          password: defaultPassword, // Using default password
+          name: `${values.bankName} - ${values.adminName}`,
           image: `${values.headquartersAddress} - ${values.licenseNumber}`,
-        
           callbackURL: "/dashboard",
         },
         {
@@ -63,7 +63,7 @@ export default function BankSignup() {
             toast.loading("Processing your request...");
           },
           onSuccess: () => {
-            toast.success("Bank registered successfully!");
+            toast.success("Bank registered successfully! Default password is your bank code followed by @1234");
             window.location.href = "/";
           },
           onError: (ctx) => {
@@ -71,6 +71,7 @@ export default function BankSignup() {
           },
         }
       );
+      
       if (error) {
         toast.error(error.message || "Signup failed, please try again.");
       }
@@ -163,8 +164,6 @@ export default function BankSignup() {
               )}
             </div>
 
-      
-
             <div>
               <Label className="text-blue-700">Admin Phone</Label>
               <Input {...register("adminPhone")} placeholder="0912345678" />
@@ -175,27 +174,11 @@ export default function BankSignup() {
               )}
             </div>
 
-            <div>
-              <div className="flex justify-between items-center">
-                <Label className="text-blue-700">Password</Label>
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="text-xs hover:text-blue-800 text-blue-700"
-                >
-                  {showPassword ? "Hide" : "Show"}
-                </button>
-              </div>
-              <Input
-                type={showPassword ? "text" : "password"}
-                {...register("password")}
-                placeholder="Create a password"
-              />
-              {errors.password && (
-                <p className="text-xs text-blue-600">
-                  {errors.password.message}
-                </p>
-              )}
+            <div className="bg-blue-50 p-3 rounded-md">
+              <p className="text-sm text-blue-700">
+                Default password will be automatically generated as: <strong>yourbankcode@12341234</strong>
+                
+              </p>
             </div>
 
             <Button
@@ -214,8 +197,6 @@ export default function BankSignup() {
             </Button>
           </form>
         </CardContent>
-
-      
       </Card>
     </div>
   );
