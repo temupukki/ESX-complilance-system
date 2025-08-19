@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import prisma from "@/lib/prisma";
 import { format, differenceInDays } from "date-fns";
-import EditableDeadlines from "../components/EditableDeadlines";
+import EditableDeadlines from "@/components/EditableDeadlines";
 
 export default async function DashboardPage() {
   const session = await auth.api.getSession({
@@ -97,7 +97,7 @@ export default async function DashboardPage() {
       <header className="bg-white shadow-sm border-b">
         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-blue-700">
-            ESX Document Manager
+            ESX Compilance Tracker
           </h1>
           <div className="flex items-center gap-4">
             <Button

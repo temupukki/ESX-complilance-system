@@ -105,14 +105,14 @@ export default function BankSignin() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200 p-4 sm:p-6">
-      <title>Bank Sign In | Securities Exchange</title>
+      <title>Sign In </title>
       <Card className="w-full max-w-md p-6 sm:p-8 bg-white rounded-2xl shadow-lg border border-blue-200">
         <CardHeader className="text-center space-y-2 mb-4 sm:mb-6">
           <CardTitle className="text-3xl sm:text-4xl font-extrabold text-blue-700">
-            Bank Login
+          Sign in
           </CardTitle>
           <CardDescription className="text-blue-500 text-base sm:text-lg">
-            Sign in to your bank account
+            Sign in to your account
           </CardDescription>
         </CardHeader>
 
@@ -124,7 +124,7 @@ export default function BankSignin() {
                 htmlFor="bankCode"
                 className="font-semibold text-blue-700 text-sm sm:text-base"
               >
-                Bank Code
+                Enter Code
               </Label>
               <Input
                 id="bankCode"
