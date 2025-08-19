@@ -3,12 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 
-interface Params {
-  params: { id: string };
-}
-
 // Update a deadline
-export async function PUT(request: NextRequest, { params }: Params) {
+export async function PUT(request: NextRequest, { params }: any) {
   try {
     const session = await auth.api.getSession({ headers: request.headers });
 
@@ -32,7 +28,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
 }
 
 // Delete a deadline
-export async function DELETE(request: NextRequest, { params }: Params) {
+export async function DELETE(request: NextRequest, { params }: any) {
   try {
     const session = await auth.api.getSession({ headers: request.headers });
 
