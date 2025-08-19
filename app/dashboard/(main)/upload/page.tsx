@@ -6,10 +6,28 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+// Define document types
+const DOCUMENT_TYPES = [
+  "annual report",
+  "semi annual report",
+  "insider trading policy",
+  "board meeting disclosure",
+  "share holder meeting disclosure",
+  "confidential information",
+] as const;
 
 export default function UploadPage() {
   const [file, setFile] = useState<File | null>(null);
   const [companyName, setCompanyName] = useState("");
+  const [documentType, setDocumentType] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [role, setRole] = useState<"USER" | "ADMIN">("USER");
@@ -33,6 +51,11 @@ export default function UploadPage() {
   const handleUpload = async () => {
     if (!file) {
       setMessage("Please select a file first");
+      return;
+    }
+
+    if (!documentType) {
+      setMessage("Please select a document type");
       return;
     }
 
@@ -66,6 +89,7 @@ export default function UploadPage() {
           userId: userEmail || "unknown-user",
           companyName: finalCompanyName,
           from: userEmail,
+          type: documentType,
         }),
       });
 
@@ -74,6 +98,7 @@ export default function UploadPage() {
       setMessage("File uploaded successfully!");
       setFile(null);
       setCompanyName("");
+      setDocumentType("");
     } catch (err: any) {
       console.error(err);
       setMessage(`Upload failed: ${err.message}`);
@@ -104,6 +129,24 @@ export default function UploadPage() {
               />
             </div>
           )}
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">
+              Document Type
+            </label>
+            <Select value={documentType} onValueChange={setDocumentType}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select document type" />
+              </SelectTrigger>
+              <SelectContent>
+                {DOCUMENT_TYPES.map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700">

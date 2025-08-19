@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 
 export async function POST(req: Request) {
   try {
-    const { title, fileUrl, userId,companyName,from } = await req.json();
+    const { title, fileUrl, userId,companyName,from,type } = await req.json();
 
     if (!title || !fileUrl || !userId) {
       return NextResponse.json(
@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     }
 
     const doc = await prisma.document.create({
-      data: { title, fileUrl, userId,companyName,from },
+      data: { title, fileUrl, userId,companyName,from,type },
     });
 
     return NextResponse.json(doc);

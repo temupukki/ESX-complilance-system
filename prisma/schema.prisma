@@ -80,6 +80,7 @@ model Verification {
 }
 model Document {
   id        String   @id @default(uuid())
+  type      String?
   title     String
   fileUrl   String   // link from Supabase
   createdAt DateTime @default(now())
