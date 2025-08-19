@@ -19,6 +19,24 @@ export default function DocumentsPage() {
   const [selectedType, setSelectedType] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [userEmail, setUserEmail] = useState("");
+
+  useEffect(() => {
+    // Get user email from session
+    async function getUserEmail() {
+      try {
+        const response = await fetch("/api/session");
+        if (response.ok) {
+          const session = await response.json();
+          setUserEmail(session?.user?.email || "");
+        }
+      } catch (err) {
+        console.error("Failed to get user email:", err);
+      }
+    }
+
+    getUserEmail();
+  }, []);
 
   useEffect(() => {
     async function fetchDocuments() {
@@ -27,7 +45,12 @@ export default function DocumentsPage() {
         if (!response.ok) throw new Error("Failed to fetch documents");
         const data = await response.json();
         setDocuments(data);
-        setFilteredDocuments(data);
+        
+        // Filter documents where companyName matches user email
+        const userDocuments = data.filter((doc: Document) => 
+          doc.companyName.toLowerCase() === userEmail.toLowerCase()
+        );
+        setFilteredDocuments(userDocuments);
       } catch (err) {
         setError(err instanceof Error ? err.message : "An error occurred");
       } finally {
@@ -35,22 +58,35 @@ export default function DocumentsPage() {
       }
     }
 
-    fetchDocuments();
-  }, []);
+    if (userEmail) {
+      fetchDocuments();
+    }
+  }, [userEmail]);
 
   useEffect(() => {
+    if (!userEmail) return;
+
+    // First filter by user email, then by document type
+    const userDocuments = documents.filter(doc => 
+      doc.companyName.toLowerCase() === userEmail.toLowerCase()
+    );
+
     if (selectedType === "all") {
-      setFilteredDocuments(documents);
+      setFilteredDocuments(userDocuments);
     } else {
       setFilteredDocuments(
-        documents.filter((doc) => doc.type === selectedType)
+        userDocuments.filter((doc) => doc.type === selectedType)
       );
     }
-  }, [selectedType, documents]);
+  }, [selectedType, documents, userEmail]);
 
-  // Get unique document types
+  // Get unique document types from user's documents only
+  const userDocuments = documents.filter(doc => 
+    doc.companyName.toLowerCase() === userEmail.toLowerCase()
+  );
+  
   const documentTypes = Array.from(
-    new Set(documents.map((doc) => doc.type).filter(Boolean))
+    new Set(userDocuments.map((doc) => doc.type).filter(Boolean))
   ) as string[];
 
   if (loading) {

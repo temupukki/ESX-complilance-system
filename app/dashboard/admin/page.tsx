@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 const ADMIN_LINKS = [
   { href: "/dashboard/company", label: "Companies Management" },
   { href: "/dashboard/post", label: "Announce Message" },
+    { href: "/dashboard/admin/deadlines", label: "Manage Deadlines" },
 ];
 
 export default async function AdminPage() {
@@ -25,7 +26,7 @@ export default async function AdminPage() {
         This is your admin dashboard. Click any link to manage the system.
       </p>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {ADMIN_LINKS.map((link) => (
           <Link
             key={link.href}
