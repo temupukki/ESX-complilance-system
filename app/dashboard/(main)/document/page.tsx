@@ -9,6 +9,11 @@ interface Document {
   type: string | null;
   from: string | null;
   companyName: string;
+  reportingDate: string;
+  responsibleUnit: string;
+  remark: string;
+  meetingType: string;
+  timeLine:string;
   fileUrl: string;
   createdAt: Date;
 }
@@ -45,10 +50,11 @@ export default function DocumentsPage() {
         if (!response.ok) throw new Error("Failed to fetch documents");
         const data = await response.json();
         setDocuments(data);
-        
+
         // Filter documents where companyName matches user email
-        const userDocuments = data.filter((doc: Document) => 
-          doc.companyName.toLowerCase() === userEmail.toLowerCase()
+        const userDocuments = data.filter(
+          (doc: Document) =>
+            doc.companyName.toLowerCase() === userEmail.toLowerCase()
         );
         setFilteredDocuments(userDocuments);
       } catch (err) {
@@ -67,8 +73,8 @@ export default function DocumentsPage() {
     if (!userEmail) return;
 
     // First filter by user email, then by document type
-    const userDocuments = documents.filter(doc => 
-      doc.companyName.toLowerCase() === userEmail.toLowerCase()
+    const userDocuments = documents.filter(
+      (doc) => doc.companyName.toLowerCase() === userEmail.toLowerCase()
     );
 
     if (selectedType === "all") {
@@ -81,10 +87,10 @@ export default function DocumentsPage() {
   }, [selectedType, documents, userEmail]);
 
   // Get unique document types from user's documents only
-  const userDocuments = documents.filter(doc => 
-    doc.companyName.toLowerCase() === userEmail.toLowerCase()
+  const userDocuments = documents.filter(
+    (doc) => doc.companyName.toLowerCase() === userEmail.toLowerCase()
   );
-  
+
   const documentTypes = Array.from(
     new Set(userDocuments.map((doc) => doc.type).filter(Boolean))
   ) as string[];
@@ -122,7 +128,7 @@ export default function DocumentsPage() {
           <h2 className="text-lg font-semibold text-gray-800 mb-3 sm:mb-0">
             Filter Documents
           </h2>
-          
+
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setSelectedType("all")}
@@ -134,7 +140,7 @@ export default function DocumentsPage() {
             >
               All Documents
             </button>
-            
+
             {documentTypes.map((type) => (
               <button
                 key={type}
@@ -150,11 +156,12 @@ export default function DocumentsPage() {
             ))}
           </div>
         </div>
-        
+
         {selectedType !== "all" && (
           <div className="mt-3 flex items-center">
             <span className="text-sm text-gray-600">
-              Filtering by: <span className="font-medium capitalize">{selectedType}</span>
+              Filtering by:{" "}
+              <span className="font-medium capitalize">{selectedType}</span>
             </span>
             <button
               onClick={() => setSelectedType("all")}
@@ -169,8 +176,8 @@ export default function DocumentsPage() {
       {filteredDocuments.length === 0 ? (
         <div className="text-center mt-8">
           <p className="text-gray-500 text-lg">
-            {selectedType === "all" 
-              ? "No documents available for your account." 
+            {selectedType === "all"
+              ? "No documents available for your account."
               : `No documents found for type "${selectedType}".`}
           </p>
           {selectedType !== "all" && (
@@ -190,9 +197,26 @@ export default function DocumentsPage() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                   Title
                 </th>
+
                 <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                   Type
                 </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                  Reporting date
+                </th>
+                 <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                 Time line
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                  Responsible Unit
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                  Remark
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                  Metting type
+                </th>
+
                 <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                   From
                 </th>
@@ -209,13 +233,41 @@ export default function DocumentsPage() {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredDocuments.map((doc) => (
-                <tr key={doc.id} className="hover:bg-gray-100 transition-colors">
+                <tr
+                  key={doc.id}
+                  className="hover:bg-gray-100 transition-colors"
+                >
                   <td className="px-6 py-4 whitespace-normal text-gray-800 font-medium">
                     {doc.title}
                   </td>
                   <td className="px-6 py-4 whitespace-normal">
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 capitalize">
                       {doc.type || "Unknown"}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-normal">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 capitalize">
+                      {doc.reportingDate || "Unknown"}
+                    </span>
+                  </td>
+                     <td className="px-6 py-4 whitespace-normal">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 capitalize">
+                      {doc.timeLine || "Unknown"}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-normal">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 capitalize">
+                      {doc.responsibleUnit || "Unknown"}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-normal">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 capitalize">
+                      {doc.remark || "Unknown"}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-normal">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 capitalize">
+                      {doc.meetingType || "Unknown"}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-normal text-gray-700">

@@ -87,6 +87,11 @@ model Document {
   userId    String
   from String?             
   companyName String?
+  reportingDate String?
+  responsibleUnit String?
+  remark String?
+  meetingType String?
+  timeLine String?
 }
 model Announcement {
   id        String   @id @default(uuid())

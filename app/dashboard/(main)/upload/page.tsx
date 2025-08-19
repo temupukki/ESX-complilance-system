@@ -13,8 +13,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { time } from "console";
 
-// Define document types
+const ANNUAL_REPORT_DATES = ["June 30", "July 7", "December 31"];
 const DOCUMENT_TYPES = [
   "annual report",
   "semi annual report",
@@ -28,10 +30,16 @@ export default function UploadPage() {
   const [file, setFile] = useState<File | null>(null);
   const [companyName, setCompanyName] = useState("");
   const [documentType, setDocumentType] = useState<string>("");
+  const [customDocumentType, setCustomDocumentType] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [role, setRole] = useState<"USER" | "ADMIN">("USER");
   const [userEmail, setUserEmail] = useState("");
+  const [selectedDate, setSelectedDate] = useState("");
+   const [timeline, settimeline] = useState("");
+    const [mettype, setmettype] = useState("");
+  const [responsibleUnit, setResponsibleUnit] = useState("");
+  const [remark, setRemark] = useState("");
 
   useEffect(() => {
     async function fetchSession() {
@@ -59,6 +67,49 @@ export default function UploadPage() {
       return;
     }
 
+    // Additional validation for annual reports
+    if (documentType === "annual report") {
+      if (!selectedDate) {
+        setMessage("Please select a reporting date for the annual report");
+        return;
+      }
+      if (!responsibleUnit) {
+        setMessage("Please enter a responsible unit for the annual report");
+        return;
+      }
+    }
+
+    // Validation for other document types with required fields
+    if (documentType === "semi annual report" || 
+        documentType === "insider trading policy" || 
+        documentType === "share holder meeting disclosure" || 
+        documentType === "confidential information") {
+      if (!timeline) {
+        setMessage("Please enter a time line");
+        return;
+      }
+      if (!responsibleUnit) {
+        setMessage("Please enter a responsible unit");
+        return;
+      }
+    }
+
+    // Validation for board meeting disclosure
+    if (documentType === "board meeting disclosure") {
+      if (!mettype) {
+        setMessage("Please enter a meeting type");
+        return;
+      }
+      if (!timeline) {
+        setMessage("Please enter a time line");
+        return;
+      }
+      if (!responsibleUnit) {
+        setMessage("Please enter a responsible unit");
+        return;
+      }
+    }
+
     setLoading(true);
     setMessage("");
 
@@ -76,9 +127,34 @@ export default function UploadPage() {
         .from(bucketName)
         .getPublicUrl(filePath);
 
-      const finalCompanyName = role === "ADMIN" 
-        ? `${companyName.trim().toLowerCase()}@esx.com`
-        : "esx1@esx.com";
+      const finalCompanyName =
+        role === "ADMIN"
+          ? `${companyName.trim().toLowerCase()}@esx.com`
+          : "esx1@esx.com";
+
+      // Prepare additional metadata for all document types
+      const additionalMetadata = {
+        ...(documentType === "annual report" && {
+          reportingDate: selectedDate,
+          responsibleUnit: responsibleUnit,
+          remark: remark,
+          timeLine:timeline
+        }),
+        ...((documentType === "semi annual report" || 
+            documentType === "insider trading policy" || 
+            documentType === "share holder meeting disclosure" || 
+            documentType === "confidential information") && {
+          timeLine: timeline,
+          responsibleUnit: responsibleUnit,
+          remark: remark,
+        }),
+        ...(documentType === "board meeting disclosure" && {
+          meetingType: mettype,
+          timeLine: timeline,
+          responsibleUnit: responsibleUnit,
+          remark: remark,
+        })
+      };
 
       const res = await fetch("/api/documents", {
         method: "POST",
@@ -90,6 +166,7 @@ export default function UploadPage() {
           companyName: finalCompanyName,
           from: userEmail,
           type: documentType,
+          ...additionalMetadata,
         }),
       });
 
@@ -99,6 +176,10 @@ export default function UploadPage() {
       setFile(null);
       setCompanyName("");
       setDocumentType("");
+      setCustomDocumentType("");
+      setSelectedDate("");
+      setResponsibleUnit("");
+      setRemark("");
     } catch (err: any) {
       console.error(err);
       setMessage(`Upload failed: ${err.message}`);
@@ -115,39 +196,186 @@ export default function UploadPage() {
             Document Upload
           </CardTitle>
         </CardHeader>
-        
+
         <CardContent className="space-y-4">
           {role === "ADMIN" && (
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">
-                Bank Code
+                Issuer Code
               </label>
               <Input
-                placeholder="Enter bank code"
+                placeholder="Enter issuer code"
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
               />
             </div>
           )}
           {role === "USER" && (
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">
-              Document Type
-            </label>
-            <Select value={documentType} onValueChange={setDocumentType}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select document type" />
-              </SelectTrigger>
-              <SelectContent>
-                {DOCUMENT_TYPES.map((type) => (
-                  <SelectItem key={type} value={type}>
-                    {type.charAt(0).toUpperCase() + type.slice(1)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-           )}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                Document Type
+              </label>
+              <Select value={documentType} onValueChange={setDocumentType}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select document type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {DOCUMENT_TYPES.map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {type.charAt(0).toUpperCase() + type.slice(1)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {documentType === "annual report" && (
+            <>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Reporting Date
+                </label>
+                <div className="space-y-2">
+                  {ANNUAL_REPORT_DATES.map((date) => (
+                    <div key={date} className="flex items-center space-x-2">
+                      <input
+                        type="radio"
+                        id={date}
+                        name="reportingDate"
+                        value={date}
+                        checked={selectedDate === date}
+                        onChange={(e) => setSelectedDate(e.target.value)}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                        required
+                      />
+                      <label htmlFor={date} className="text-sm text-gray-700">
+                        {date}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Responsible Unit
+                </label>
+                <Input
+                  placeholder="Enter responsible unit"
+                  value={responsibleUnit}
+                  onChange={(e) => setResponsibleUnit(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Remark
+                </label>
+                <Textarea
+                  placeholder="Enter any additional remarks"
+                  value={remark}
+                  onChange={(e) => setRemark(e.target.value)}
+                  rows={3}
+                />
+              </div>
+            </>
+          )}
+
+          {(documentType === "semi annual report" ||
+            documentType === "insider trading policy" ||
+            documentType === "share holder meeting disclosure" ||
+            documentType === "confidential information") && (
+            <>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Time Line
+                </label>
+                <Input
+                  placeholder="Enter time line"
+                  value={timeline}
+                  onChange={(e) => settimeline(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Responsible Unit
+                </label>
+                <Input
+                  placeholder="Enter responsible unit"
+                  value={responsibleUnit}
+                  onChange={(e) => setResponsibleUnit(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Remark
+                </label>
+                <Textarea
+                  placeholder="Enter any additional remarks"
+                  value={remark}
+                  onChange={(e) => setRemark(e.target.value)}
+                  rows={3}
+                />
+              </div>
+            </>
+          )}
+          {documentType === "board meeting disclosure" && (
+            <>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Meeting Type
+                </label>
+                <Input
+                  placeholder="Enter meeting type"
+                  value={mettype}
+                  onChange={(e) => setmettype(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Time Line
+                </label>
+                <Input
+                  placeholder="Enter time line"
+                  value={timeline}
+                  onChange={(e) => settimeline(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Responsible Unit
+                </label>
+                <Input
+                  placeholder="Enter responsible unit"
+                  value={responsibleUnit}
+                  onChange={(e) => setResponsibleUnit(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Remark
+                </label>
+                <Textarea
+                  placeholder="Enter any additional remarks"
+                  value={remark}
+                  onChange={(e) => setRemark(e.target.value)}
+                  rows={3}
+                />
+              </div>
+            </>
+          )}
 
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700">
@@ -159,11 +387,7 @@ export default function UploadPage() {
             />
           </div>
 
-          <Button
-            onClick={handleUpload}
-            disabled={loading}
-            className="w-full"
-          >
+          <Button onClick={handleUpload} disabled={loading} className="w-full">
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -175,11 +399,13 @@ export default function UploadPage() {
           </Button>
 
           {message && (
-            <p className={`text-center text-sm p-3 rounded-md ${
-              message.startsWith("Upload failed") 
-                ? "bg-red-100 text-red-600"
-                : "bg-green-100 text-green-600"
-            }`}>
+            <p
+              className={`text-center text-sm p-3 rounded-md ${
+                message.startsWith("Upload failed")
+                  ? "bg-red-100 text-red-600"
+                  : "bg-green-100 text-green-600"
+              }`}
+            >
               {message}
             </p>
           )}
