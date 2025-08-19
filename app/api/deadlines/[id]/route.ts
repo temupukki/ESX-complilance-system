@@ -3,15 +3,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 
+interface Params {
+  params: { id: string };
+}
+
 // Update a deadline
-export async function PUT(
-  request: NextRequest,
-  context: { params: { id: string } } // use context instead of destructuring
-) {
+export async function PUT(request: NextRequest, { params }: Params) {
   try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
+    const session = await auth.api.getSession({ headers: request.headers });
 
     if (!session || session.user.role !== "ADMIN") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -21,46 +20,31 @@ export async function PUT(
     const { deadline } = body;
 
     const updatedDeadline = await prisma.deadline.update({
-      where: { id: context.params.id },
-      data: {
-        deadline: new Date(deadline),
-      },
+      where: { id: params.id },
+      data: { deadline: new Date(deadline) },
     });
 
     return NextResponse.json(updatedDeadline);
   } catch (error) {
     console.error("Error updating deadline:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
 // Delete a deadline
-export async function DELETE(
-  request: NextRequest,
-  context: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest, { params }: Params) {
   try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
+    const session = await auth.api.getSession({ headers: request.headers });
 
     if (!session || session.user.role !== "ADMIN") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    await prisma.deadline.delete({
-      where: { id: context.params.id },
-    });
+    await prisma.deadline.delete({ where: { id: params.id } });
 
     return NextResponse.json({ message: "Deadline deleted successfully" });
   } catch (error) {
     console.error("Error deleting deadline:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
