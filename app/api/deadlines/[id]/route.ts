@@ -3,16 +3,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 
+// Update a deadline
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } } // use context instead of destructuring
 ) {
   try {
     const session = await auth.api.getSession({
       headers: request.headers,
     });
 
-    if (!session || session.user.role !== 'ADMIN') {
+    if (!session || session.user.role !== "ADMIN") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -20,7 +21,7 @@ export async function PUT(
     const { deadline } = body;
 
     const updatedDeadline = await prisma.deadline.update({
-      where: { id: params.id },
+      where: { id: context.params.id },
       data: {
         deadline: new Date(deadline),
       },
@@ -36,21 +37,22 @@ export async function PUT(
   }
 }
 
+// Delete a deadline
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
     const session = await auth.api.getSession({
       headers: request.headers,
     });
 
-    if (!session || session.user.role !== 'ADMIN') {
+    if (!session || session.user.role !== "ADMIN") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     await prisma.deadline.delete({
-      where: { id: params.id },
+      where: { id: context.params.id },
     });
 
     return NextResponse.json({ message: "Deadline deleted successfully" });
