@@ -87,10 +87,10 @@ export default function BankSignup() {
       <Card className="w-full max-w-2xl bg-white rounded-xl shadow-sm border-0">
         <CardHeader className="text-center space-y-1 pb-2">
           <CardTitle className="text-2xl font-bold text-blue-700">
-            Register Bank
+            Register Issuer
           </CardTitle>
           <CardDescription className="text-blue-500">
-            Onboard your bank to the Securities Exchange
+            Onboard your Issuer to the ESX
           </CardDescription>
         </CardHeader>
 
@@ -176,7 +176,7 @@ export default function BankSignup() {
 
             <div className="bg-blue-50 p-3 rounded-md">
               <p className="text-sm text-blue-700">
-                Default password will be automatically generated as: <strong>yourbankcode@12341234</strong>
+                Default password will be automatically generated as: <strong>yourissuercode@12341234</strong>
                 
               </p>
             </div>
@@ -189,10 +189,10 @@ export default function BankSignup() {
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Registering bank...
+                  Registering Issuer...
                 </>
               ) : (
-                "Register Bank"
+                "Register Issuer"
               )}
             </Button>
           </form>
