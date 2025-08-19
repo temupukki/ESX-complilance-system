@@ -90,7 +90,7 @@ export default function BankSignup() {
             Register Issuer
           </CardTitle>
           <CardDescription className="text-blue-500">
-            Onboard your Issuer to the ESX
+            Onboard to the ESX
           </CardDescription>
         </CardHeader>
 
@@ -99,7 +99,7 @@ export default function BankSignup() {
             {/* Bank Info */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <Label className="text-blue-700">Bank Name</Label>
+                <Label className="text-blue-700">Issuer Name</Label>
                 <Input
                   {...register("bankName")}
                   placeholder="Commercial Bank"
@@ -111,7 +111,7 @@ export default function BankSignup() {
                 )}
               </div>
               <div>
-                <Label className="text-blue-700">Bank Code</Label>
+                <Label className="text-blue-700">Issuer Code</Label>
                 <Input {...register("bankCode")} placeholder="CBE001" />
                 {errors.bankCode && (
                   <p className="text-xs text-blue-600">
