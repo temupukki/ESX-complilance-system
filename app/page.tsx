@@ -184,14 +184,6 @@ export default function BankSignin() {
           </form>
         </CardContent>
 
-        <CardFooter className="flex justify-center mt-4">
-          <p className="text-sm text-gray-600">
-            Don't have an account?{" "}
-            <Link href="/bank/register" className="text-blue-600 hover:underline">
-              Register here
-            </Link>
-          </p>
-        </CardFooter>
       </Card>
     </div>
   );
