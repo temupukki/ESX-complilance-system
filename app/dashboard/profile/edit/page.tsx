@@ -125,7 +125,7 @@ export default function EditProfilePage() {
   return (
     <div className="p-6 max-w-md mx-auto">
       <h1 className="text-2xl font-bold mb-6 text-center text-blue-700">
-        Edit Bank Profile
+        Edit Issuer Profile
       </h1>
 
       {error && (
@@ -142,11 +142,11 @@ export default function EditProfilePage() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="bg-blue-50 p-4 rounded-md">
-          <h2 className="text-lg font-semibold text-blue-800 mb-3">Bank Information</h2>
+          <h2 className="text-lg font-semibold text-blue-800 mb-3">Issuer Information</h2>
           
           <div className="mb-3">
             <label htmlFor="bankName" className="block text-sm font-medium text-gray-700 mb-1">
-              Bank Name
+              Issuer Name
             </label>
             <input
               type="text"
