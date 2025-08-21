@@ -58,10 +58,11 @@ export default async function ProfilePage() {
           <p className="text-sm text-gray-500">
             {formatDistanceToNow(accountCreated, { addSuffix: true })}
           </p>
+          <Link href="/dashboard/profile/edit" className="text-sm text-blue-600 flex justify-center m-4">Edit Profile</Link>
         </div>
       </div>
 
-      {/* Edit Profile Button */}
+    
       <div className="mt-6">
         <Link
           href="/dashboard/profile/change"
