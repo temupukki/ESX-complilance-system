@@ -326,7 +326,7 @@ export default async function DashboardPage() {
                   asChild
                   className="h-16 justify-start px-4 py-3 bg-white text-gray-800 border border-gray-200 hover:bg-gray-50"
                 >
-                  <Link href="/dashboard/documents" className="flex items-center gap-3">
+                  <Link href="/dashboard/document" className="flex items-center gap-3">
                     <FileText className="h-5 w-5" />
                     <span>View Documents</span>
                   </Link>
