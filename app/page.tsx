@@ -129,7 +129,7 @@ export default function BankSignin() {
               <Input
                 id="bankCode"
                 {...register("bankCode")}
-                placeholder="Enter your bank code"
+                placeholder="Enter your Issuer code"
                 className="placeholder-blue-300 text-blue-700 focus:ring-2 focus:ring-blue-400"
               />
               {errors.bankCode && (
