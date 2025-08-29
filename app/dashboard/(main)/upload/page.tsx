@@ -14,7 +14,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { time } from "console";
 
 const ANNUAL_REPORT_DATES = ["June 30", "July 7", "December 31"];
 const DOCUMENT_TYPES = [
@@ -29,15 +28,15 @@ const DOCUMENT_TYPES = [
 export default function UploadPage() {
   const [file, setFile] = useState<File | null>(null);
   const [companyName, setCompanyName] = useState("");
-  const [documentType, setDocumentType] = useState<string>("");
+  const [documentType, setDocumentType] = useState<string | null>(null);
   const [customDocumentType, setCustomDocumentType] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [role, setRole] = useState<"USER" | "ADMIN">("USER");
   const [userEmail, setUserEmail] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
-   const [timeline, settimeline] = useState("");
-    const [mettype, setmettype] = useState("");
+  const [timeline, settimeline] = useState("");
+  const [mettype, setmettype] = useState("");
   const [responsibleUnit, setResponsibleUnit] = useState("");
   const [remark, setRemark] = useState("");
 
@@ -62,12 +61,9 @@ export default function UploadPage() {
       return;
     }
 
-    if (!documentType) {
-      setMessage("Please select a document type");
-      return;
-    }
+    // Document type is now optional, so we remove the validation for it
 
-    // Additional validation for annual reports
+    // Additional validation for annual reports (only if document type is selected)
     if (documentType === "annual report") {
       if (!selectedDate) {
         setMessage("Please select a reporting date for the annual report");
@@ -79,11 +75,12 @@ export default function UploadPage() {
       }
     }
 
-    // Validation for other document types with required fields
-    if (documentType === "semi annual report" || 
+    // Validation for other document types with required fields (only if document type is selected)
+    if (documentType && 
+        (documentType === "semi annual report" || 
         documentType === "insider trading policy" || 
         documentType === "share holder meeting disclosure" || 
-        documentType === "confidential information") {
+        documentType === "confidential information")) {
       if (!timeline) {
         setMessage("Please enter a time line");
         return;
@@ -94,7 +91,7 @@ export default function UploadPage() {
       }
     }
 
-    // Validation for board meeting disclosure
+    // Validation for board meeting disclosure (only if document type is selected)
     if (documentType === "board meeting disclosure") {
       if (!mettype) {
         setMessage("Please enter a meeting type");
@@ -132,13 +129,13 @@ export default function UploadPage() {
           ? `${companyName.trim().toLowerCase()}@esx.com`
           : "esx1@esx.com";
 
-      // Prepare additional metadata for all document types
-      const additionalMetadata = {
+      // Prepare additional metadata for specific document types
+      const additionalMetadata = documentType ? {
         ...(documentType === "annual report" && {
           reportingDate: selectedDate,
           responsibleUnit: responsibleUnit,
           remark: remark,
-          timeLine:timeline
+          timeLine: timeline
         }),
         ...((documentType === "semi annual report" || 
             documentType === "insider trading policy" || 
@@ -154,7 +151,7 @@ export default function UploadPage() {
           responsibleUnit: responsibleUnit,
           remark: remark,
         })
-      };
+      } : {};
 
       const res = await fetch("/api/documents", {
         method: "POST",
@@ -165,7 +162,7 @@ export default function UploadPage() {
           userId: userEmail || "unknown-user",
           companyName: finalCompanyName,
           from: userEmail,
-          type: documentType,
+          type: documentType || "other", // Use "other" if no document type is selected
           ...additionalMetadata,
         }),
       });
@@ -175,11 +172,13 @@ export default function UploadPage() {
       setMessage("File uploaded successfully!");
       setFile(null);
       setCompanyName("");
-      setDocumentType("");
+      setDocumentType(null);
       setCustomDocumentType("");
       setSelectedDate("");
       setResponsibleUnit("");
       setRemark("");
+      settimeline("");
+      setmettype("");
     } catch (err: any) {
       console.error(err);
       setMessage(`Upload failed: ${err.message}`);
@@ -210,14 +209,16 @@ export default function UploadPage() {
               />
             </div>
           )}
+          
+          {/* Show document type selection only for USERS, not ADMINS */}
           {role === "USER" && (
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">
-                Document Type
+                Document Type (Optional)
               </label>
-              <Select value={documentType} onValueChange={setDocumentType}>
+              <Select value={documentType || ""} onValueChange={(value) => setDocumentType(value || null)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select document type" />
+                  <SelectValue placeholder="Select document type (optional)" />
                 </SelectTrigger>
                 <SelectContent>
                   {DOCUMENT_TYPES.map((type) => (
@@ -266,6 +267,17 @@ export default function UploadPage() {
                   value={responsibleUnit}
                   onChange={(e) => setResponsibleUnit(e.target.value)}
                   required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Time Line
+                </label>
+                <Input
+                  placeholder="Enter time line"
+                  value={timeline}
+                  onChange={(e) => settimeline(e.target.value)}
                 />
               </div>
 
@@ -325,6 +337,7 @@ export default function UploadPage() {
               </div>
             </>
           )}
+          
           {documentType === "board meeting disclosure" && (
             <>
               <div className="space-y-2">
