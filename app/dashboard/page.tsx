@@ -244,17 +244,15 @@ export default async function DashboardPage() {
               </Card>
             )}
 
-            {/* Editable Deadlines for ADMINS */}
             {session.user.role === "ADMIN" && <EditableDeadlines />}
 
-            {/* Recent Activity - Now Full Width */}
             <Card className="p-6 bg-white rounded-xl shadow-sm border-0">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-semibold text-gray-800">
                   Recent Activity
                 </h3>
                 <Button variant="ghost" size="sm" asChild>
-                  <Link href="/dashboard/documents" className="text-blue-600 text-sm flex items-center">
+                  <Link href="/dashboard/document" className="text-blue-600 text-sm flex items-center">
                     View all <ArrowRight className="h-4 w-4 ml-1" />
                   </Link>
                 </Button>
